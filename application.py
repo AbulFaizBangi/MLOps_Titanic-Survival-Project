@@ -106,6 +106,7 @@ def predict():
         # Make prediction
         prediction = model.predict(features)[0]
         probability = model.predict_proba(features)[0][1]
+        prediction_count.inc()
 
         if prediction == 1:
             prediction_text = f"🎉 Congratulations! You would have survived! 🛟 (Survival Probability: {probability:.2%})"
@@ -140,4 +141,4 @@ if __name__ =="__main__":
         start_http_server(metrics_port)
         print(f"Metrics server started on port {metrics_port}")
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)

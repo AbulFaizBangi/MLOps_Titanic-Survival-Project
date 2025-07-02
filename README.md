@@ -5,7 +5,7 @@ A complete MLOps pipeline for predicting Titanic passenger survival using Apache
 ## 🏗️ Architecture Overview
 
 ```
-GCP Cloud Storage → Apache Airflow → PostgreSQL → Feature Engineering → Redis Feature Store → ML Model Training → Model Artifacts → Flask Web App
+GCP Cloud Storage → Apache Airflow → PostgreSQL → Feature Engineering → Redis Feature Store → ML Model Training → Model Artifacts → Flask Web App → Prometheus → Grafana Dashboard
 ```
 
 ## 📁 Project Structure
@@ -72,6 +72,8 @@ Titanic_Survival/
 - **Containerization**: Docker support with Astronomer runtime
 - **Feature Store**: Redis for feature serving and storage
 - **Web Deployment**: Flask application ready for production deployment
+- **Visualization**: Grafana dashboards for real-time monitoring and analytics
+- **Metrics Collection**: Prometheus for scraping and storing application metrics
 
 ## 🛠️ Installation & Setup
 
@@ -82,6 +84,8 @@ Titanic_Survival/
 - PostgreSQL
 - GCP Account with Cloud Storage
 - Flask (for web application)
+- Prometheus (for metrics collection)
+- Grafana (for visualization)
 
 ### Environment Setup
 ```bash
@@ -98,6 +102,9 @@ pip install -r requirements.txt
 
 # Start Redis server
 redis-server
+
+# Start monitoring stack (Prometheus & Grafana)
+docker-compose up -d
 
 # Start Airflow (using Astronomer)
 astro dev start
@@ -139,6 +146,15 @@ python application.py
 
 # Access web interface at http://localhost:5001
 # Prometheus metrics available at http://localhost:8000+ (auto-assigned port)
+```
+
+### Option 5: Monitoring Stack
+```bash
+# Start Prometheus and Grafana
+docker-compose up -d
+
+# Access Prometheus at http://localhost:9090
+# Access Grafana at http://localhost:3000 (admin/admin)
 ```
 
 ## 📊 Model Performance
@@ -188,6 +204,29 @@ print(features)
 - **Prometheus Metrics**: Real-time metrics collection for:
   - `prediction_count`: Number of predictions made
   - `drift_count`: Number of drift events detected
+  - `scrape_duration`: Time taken for metrics scraping
+  - `sample_post_metrics`: Sample POST request metrics
+
+### Grafana Dashboard
+
+![Grafana Dashboard](Grafana%20Visual%20Board.jpg)
+
+The Grafana dashboard provides comprehensive monitoring with:
+- **Drift Count**: Real-time data drift detection metrics
+- **Scrape Duration**: Prometheus scraping performance metrics
+- **Prediction Count**: Total number of predictions made
+- **Sample POST Metrics**: API request performance tracking
+
+### Prometheus Metrics
+
+![Prometheus Metrics](Promethues.jpg)
+
+Prometheus collects and stores metrics from the Flask application:
+- **Target Health**: Monitoring application availability
+- **Metrics Scraping**: 15-second interval data collection
+- **Query Interface**: Advanced PromQL query capabilities
+
+![Metrics Endpoint](metrics.jpg)
 
 ### Recent Pipeline Execution (from logs):
 ```
@@ -197,6 +236,10 @@ print(features)
 2025-07-02 22:08:18,012 - WARNING - KSDrift not available - drift detection disabled
 2025-07-02 22:12:57,013 - INFO - Drift Detected....
 ```
+
+### Terminal Outputs
+
+![Terminal Outputs](Terminal%20Outputs.jpg)
 
 ## 🌐 Web Application
 
@@ -279,6 +322,9 @@ ksd = KSDrift(x_ref=historical_data, p_val=0.05)  # If available
 
 ### Local Development
 ```bash
+# Start monitoring stack
+docker-compose up -d
+
 # Start Airflow
 astro dev start
 
@@ -293,11 +339,45 @@ astro deploy
 
 ### Docker Deployment
 ```bash
+# Start monitoring stack
+docker-compose up -d
+
 # Build container
 docker build -t titanic-survival .
 
 # Run container
 docker run -p 5001:5001 titanic-survival
+```
+
+### Monitoring Stack Configuration
+
+#### Prometheus Configuration (prometheus.yml)
+```yaml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'flask_app'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+```
+
+#### Docker Compose Services
+```yaml
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
 ```
 
 ### Container Configuration
@@ -324,9 +404,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Web Framework**: Flask
 - **Orchestration**: Apache Airflow, Astronomer
 - **Storage**: Redis, PostgreSQL, GCP Cloud Storage
-- **Containerization**: Docker
-- **Monitoring**: Custom logging system, Prometheus, Alibi-detect (KS-Drift)
+- **Containerization**: Docker, Docker Compose
+- **Monitoring**: Custom logging system, Prometheus, Grafana, Alibi-detect (KS-Drift)
 - **Metrics**: prometheus_client for real-time monitoring
+- **Visualization**: Grafana dashboards with custom panels
 - **Frontend**: HTML5, CSS3, JavaScript (responsive design)
 - **Database**: PostgreSQL with psycopg2-binary connector
 
