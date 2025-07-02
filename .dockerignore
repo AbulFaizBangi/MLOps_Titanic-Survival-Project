@@ -1,0 +1,19 @@
+astro
+.git
+.env
+airflow_settings.yaml
+logs/
+.venv
+airflow.db
+airflow.cfg
+# Reduce build context size
+notebook/
+artifacts/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+*.log

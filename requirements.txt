@@ -1,0 +1,10 @@
+pandas
+numpy
+setuptools
+scikit-learn
+imbalanced-learn
+redis
+flask
+alibi-detect
+prometheus_client
+psycopg2-binary
