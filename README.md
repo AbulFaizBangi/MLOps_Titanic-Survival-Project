@@ -200,7 +200,7 @@ print(features)
 
 ## 🌐 Web Application
 
-![Titanic Web UI](titanic-web-ui)
+![Titanic Web UI](titanic-web-ui.png)
 
 The Flask web application provides an interactive interface for making survival predictions:
 
