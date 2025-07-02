@@ -1,5 +1,7 @@
 # Titanic Survival Prediction - MLOps Pipeline
 
+![Titanic Web UI](titanic-web-ui.png)
+
 A complete MLOps pipeline for predicting Titanic passenger survival using Apache Airflow, Redis Feature Store, Flask web application, and machine learning best practices.
 
 ## 🏗️ Architecture Overview
@@ -37,9 +39,16 @@ Titanic_Survival/
 │   └── dags/                     # DAG tests
 ├── notebook/                     # Jupyter notebooks for exploration
 ├── application.py                # Flask web application
+├── docker-compose.yaml           # Docker Compose for monitoring stack
+├── prometheus.yml                # Prometheus configuration
 ├── Dockerfile                    # Container configuration
 ├── requirements.txt              # Python dependencies
-└── setup.py                      # Package setup
+├── setup.py                      # Package setup
+├── titanic-web-ui.png           # Web application interface screenshot
+├── Grafana Visual Board.jpg      # Grafana dashboard screenshot
+├── Promethues.jpg               # Prometheus interface screenshot
+├── metrics.jpg                  # Metrics endpoint screenshot
+└── Terminal Outputs.jpg         # Terminal execution logs screenshot
 ```
 
 ## 🚀 Features
