@@ -61,10 +61,14 @@ Titanic_Survival/
 - **User-Friendly UI**: Modern, responsive design with gradient backgrounds
 - **Real-Time Predictions**: Instant survival probability calculations
 - **Input Validation**: Comprehensive form validation and error handling
+- **Data Drift Detection**: KS-Drift monitoring for model performance tracking
+- **Metrics Collection**: Prometheus metrics for prediction and drift monitoring
 
 ### MLOps Components
 - **Orchestration**: Apache Airflow for workflow management
 - **Monitoring**: Comprehensive logging system with Prometheus integration
+- **Data Drift Detection**: Alibi-detect KS-Drift implementation with automatic port management
+- **Metrics Endpoint**: Real-time metrics available at `/metrics` endpoint
 - **Containerization**: Docker support with Astronomer runtime
 - **Feature Store**: Redis for feature serving and storage
 - **Web Deployment**: Flask application ready for production deployment
@@ -134,6 +138,7 @@ python src/model_training.py
 python application.py
 
 # Access web interface at http://localhost:5001
+# Prometheus metrics available at http://localhost:8000+ (auto-assigned port)
 ```
 
 ## 📊 Model Performance
@@ -179,15 +184,23 @@ print(features)
 - **Centralized Logging**: All components log to `logs/log_YYYY-MM-DD.log`
 - **Error Tracking**: Custom exception handling with detailed error messages
 - **Pipeline Monitoring**: Airflow UI for DAG monitoring and debugging
+- **Data Drift Monitoring**: KS-Drift detection with automatic logging
+- **Prometheus Metrics**: Real-time metrics collection for:
+  - `prediction_count`: Number of predictions made
+  - `drift_count`: Number of drift events detected
 
 ### Recent Pipeline Execution (from logs):
 ```
 2025-07-02 19:46:17,552 - INFO - Accuracy is 0.949438202247191
 2025-07-02 19:46:17,579 - INFO - Model saved at artifacts/models/random_forest_model.pkl
 2025-07-02 19:46:17,580 - INFO - End of Model Training pipeline...
+2025-07-02 22:08:18,012 - WARNING - KSDrift not available - drift detection disabled
+2025-07-02 22:12:57,013 - INFO - Drift Detected....
 ```
 
 ## 🌐 Web Application
+
+![Titanic Web UI](titanic-web-ui)
 
 The Flask web application provides an interactive interface for making survival predictions:
 
@@ -196,6 +209,9 @@ The Flask web application provides an interactive interface for making survival 
 - **Real-Time Predictions**: Instant survival probability calculations
 - **Modern UI**: Responsive design with gradient backgrounds and animations
 - **Error Handling**: Comprehensive validation and error messages
+- **Data Drift Detection**: Real-time drift monitoring using KS-Drift algorithm
+- **Prometheus Metrics**: Automated metrics collection for predictions and drift events
+- **Auto Port Management**: Automatic port assignment to avoid conflicts
 
 ### Usage
 1. Start the application: `python application.py`
@@ -250,6 +266,13 @@ FEATURE_NAMES = [
     'Pclass', 'Age', 'Fare', 'Sex', 'Embarked', 'Familysize', 'Isalone',
     'HasCabin', 'Title', 'Pclass_Fare', 'Age_Fare'
 ]
+
+# Prometheus Metrics
+prediction_count = Counter('prediction_count', 'Number of predictions')
+drift_count = Counter('drift_count', 'Number of drift events detected')
+
+# Data Drift Detection
+ksd = KSDrift(x_ref=historical_data, p_val=0.05)  # If available
 ```
 
 ## 🚀 Deployment
@@ -302,7 +325,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Orchestration**: Apache Airflow, Astronomer
 - **Storage**: Redis, PostgreSQL, GCP Cloud Storage
 - **Containerization**: Docker
-- **Monitoring**: Custom logging system, Prometheus, Alibi-detect
+- **Monitoring**: Custom logging system, Prometheus, Alibi-detect (KS-Drift)
+- **Metrics**: prometheus_client for real-time monitoring
 - **Frontend**: HTML5, CSS3, JavaScript (responsive design)
 - **Database**: PostgreSQL with psycopg2-binary connector
 

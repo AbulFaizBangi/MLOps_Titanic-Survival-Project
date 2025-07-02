@@ -3,7 +3,24 @@ import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
 
+from src.logger import get_logger
+try:
+    from alibi_detect.cd import KSDrift
+except ImportError:
+    # Fallback if TensorFlow dependencies are missing
+    KSDrift = None
+from src.feature_store import RedisFeatureStore
+from sklearn.preprocessing import StandardScaler
+
+from prometheus_client import start_http_server,Counter,Gauge
+
+logger = get_logger(__name__)
+
 app = Flask(__name__, template_folder="templates")
+
+
+prediction_count = Counter('prediction_count' , " Number of prediction count" )
+drift_count = Counter('drift_count' , "Number of times data drift is detected")
 
 # Load the trained model
 MODEL_PATH = "artifacts/models/random_forest_model.pkl"
@@ -15,6 +32,27 @@ FEATURE_NAMES = [
     'Pclass', 'Age', 'Fare', 'Sex', 'Embarked', 'Familysize', 'Isalone',
     'HasCabin', 'Title', 'Pclass_Fare', 'Age_Fare'
 ]
+
+feature_store = RedisFeatureStore()
+scaler = StandardScaler()
+
+def fit_scaler_on_ref_data():
+    entity_ids = feature_store.get_all_entity_ids()
+    all_features = feature_store.get_batch_features(entity_ids)
+
+    all_features_df = pd.DataFrame.from_dict(all_features , orient='index')[FEATURE_NAMES]
+
+    scaler.fit(all_features_df)
+    return scaler.transform(all_features_df)
+
+
+historical_data = fit_scaler_on_ref_data()
+if KSDrift is not None:
+    ksd = KSDrift(x_ref=historical_data , p_val=0.05)
+else:
+    ksd = None
+    logger.warning("KSDrift not available - drift detection disabled")
+
 
 @app.route('/')
 def home():
@@ -47,6 +85,20 @@ def predict():
             pclass, age, fare, sex, embarked, familysize, isalone,
             hascabin, title, pclass_fare, age_fare
         ]], columns=FEATURE_NAMES)
+        
+        ##### Data Drift Detection
+        if ksd is not None:
+            features_scaled = scaler.transform(features)
+            drift = ksd.predict(features_scaled)
+            print("Drift Response : ",drift)
+            
+            drift_response = drift.get('data',{})
+            is_drift = drift_response.get('is_drift' , None)
+            
+            if is_drift is not None and is_drift==1:
+                print("Drift Detected....")
+                logger.info("Drift Detected....")
+                drift_count.inc()
 
         # For extra debugging, print the DataFrame
         print("DataFrame for prediction:\n", features)
@@ -66,5 +118,26 @@ def predict():
     except Exception as e:
         return render_template('index.html', prediction_text=f"⚠️ Error: {str(e)}")
 
-if __name__ == "__main__":
+@app.route('/metrics')
+def metrics():
+    from prometheus_client import generate_latest
+    from flask import Response
+
+    return Response(generate_latest() , content_type='text/plain')
+    
+if __name__ =="__main__":
+    import socket
+    
+    def find_free_port(start_port=8000):
+        for port in range(start_port, start_port + 100):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                if s.connect_ex(('localhost', port)) != 0:
+                    return port
+        return None
+    
+    metrics_port = find_free_port(8000)
+    if metrics_port:
+        start_http_server(metrics_port)
+        print(f"Metrics server started on port {metrics_port}")
+    
     app.run(debug=True, host='0.0.0.0', port=5001)
