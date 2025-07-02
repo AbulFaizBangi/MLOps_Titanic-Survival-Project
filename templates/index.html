@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="/static/style.css" />
+  <title>🚢 Titanic Survival Predictor</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #00c9ff;
+      background: linear-gradient(to right, #92fe9d, #00c9ff);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .prediction-result {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .prediction-result h3 {
+      margin-bottom: 10px;
+    }
+
+    .prediction-result p {
+      font-size: 1.2rem;
+      color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚢 Will You Survive the Titanic? 🧊</h1>
+    <form action="/predict" method="POST" class="prediction-form">
+      <div class="form-group">
+        <label for="Age">🧓 Age:</label>
+        <input type="number" step="0.01" id="Age" name="Age" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Fare">💰 Fare Paid:</label>
+        <input type="number" step="0.01" id="Fare" name="Fare" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Pclass">🎟️ Passenger Class:</label>
+        <input type="number" step="0.01" id="Pclass" name="Pclass" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Sex">⚥ Gender:</label>
+        <select id="Sex" name="Sex" required>
+          <option value="0">🚹 Male</option>
+          <option value="1">🚺 Female</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="Embarked">🚢 Port of Embarkation:</label>
+        <select id="Embarked" name="Embarked" required>
+          <option value="0">Cherbourg (C)</option>
+          <option value="1">Queenstown (Q)</option>
+          <option value="2">Southampton (S)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="Familysize">👨‍👩‍👧 Family Size:</label>
+        <input type="number" id="Familysize" name="Familysize" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Isalone">🧍 Are You Alone?</label>
+        <select id="Isalone" name="Isalone" required>
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="HasCabin">🛏️ Have a Cabin?</label>
+        <select id="HasCabin" name="HasCabin" required>
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="Title">🎩 Title (e.g. Mr=1, Miss=2):</label>
+        <input type="number" id="Title" name="Title" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Pclass_Fare">📊 Pclass × Fare:</label>
+        <input type="number" step="0.01" id="Pclass_Fare" name="Pclass_Fare" required />
+      </div>
+
+      <div class="form-group">
+        <label for="Age_Fare">📈 Age × Fare:</label>
+        <input type="number" step="0.01" id="Age_Fare" name="Age_Fare" required />
+      </div>
+
+      <button type="submit" class="btn">🚀 Predict My Fate!</button>
+    </form>
+
+    <div class="prediction-result">
+      <h3>🔮 Your Survival Prediction:</h3>
+      {% if prediction_text %}
+        <p>{{ prediction_text }}</p>
+      {% else %}
+        <p>No predictions yet made... ⏳</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
