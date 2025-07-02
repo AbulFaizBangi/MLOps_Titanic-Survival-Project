@@ -1,11 +1,11 @@
 # Titanic Survival Prediction - MLOps Pipeline
 
-A complete MLOps pipeline for predicting Titanic passenger survival using Apache Airflow, Redis Feature Store, and machine learning best practices.
+A complete MLOps pipeline for predicting Titanic passenger survival using Apache Airflow, Redis Feature Store, Flask web application, and machine learning best practices.
 
 ## 🏗️ Architecture Overview
 
 ```
-GCP Cloud Storage → Apache Airflow → PostgreSQL → Feature Engineering → Redis Feature Store → ML Model Training → Model Artifacts
+GCP Cloud Storage → Apache Airflow → PostgreSQL → Feature Engineering → Redis Feature Store → ML Model Training → Model Artifacts → Flask Web App
 ```
 
 ## 📁 Project Structure
@@ -20,17 +20,26 @@ Titanic_Survival/
 │   ├── custom_exception.py       # Custom exception handling
 │   └── logger.py                 # Centralized logging
 ├── dags/                         # Airflow DAGs
-│   └── extract_data_from_gcp.py  # GCS to PostgreSQL data pipeline
+│   ├── extract_data_from_gcp.py  # GCS to PostgreSQL data pipeline
+│   └── exampledag.py            # Example Airflow DAG
 ├── pipeline/                     # End-to-end training pipeline
 │   └── training_pipeline.py      # Complete ML pipeline orchestration
 ├── config/                       # Configuration files
 │   ├── database_config.py        # Database connection settings
 │   └── paths_config.py          # File paths configuration
+├── templates/                    # Flask web application templates
+│   └── index.html               # Interactive prediction interface
 ├── artifacts/                    # Model artifacts and data
 │   ├── models/                   # Trained models (RandomForest: 94.9% accuracy)
 │   └── raw/                      # Raw datasets
 ├── logs/                         # Application logs
-└── notebook/                     # Jupyter notebooks for exploration
+├── tests/                        # Test files
+│   └── dags/                     # DAG tests
+├── notebook/                     # Jupyter notebooks for exploration
+├── application.py                # Flask web application
+├── Dockerfile                    # Container configuration
+├── requirements.txt              # Python dependencies
+└── setup.py                      # Package setup
 ```
 
 ## 🚀 Features
@@ -47,11 +56,18 @@ Titanic_Survival/
 - **Features**: 11 engineered features including Pclass, Age, Fare, Sex, Embarked, etc.
 - **Validation**: Cross-validation with RandomizedSearchCV
 
+### Web Application
+- **Interactive Interface**: Flask-based web application for real-time predictions
+- **User-Friendly UI**: Modern, responsive design with gradient backgrounds
+- **Real-Time Predictions**: Instant survival probability calculations
+- **Input Validation**: Comprehensive form validation and error handling
+
 ### MLOps Components
 - **Orchestration**: Apache Airflow for workflow management
-- **Monitoring**: Comprehensive logging system
-- **Containerization**: Docker support with Astronomer
+- **Monitoring**: Comprehensive logging system with Prometheus integration
+- **Containerization**: Docker support with Astronomer runtime
 - **Feature Store**: Redis for feature serving and storage
+- **Web Deployment**: Flask application ready for production deployment
 
 ## 🛠️ Installation & Setup
 
@@ -61,6 +77,7 @@ Titanic_Survival/
 - Redis Server
 - PostgreSQL
 - GCP Account with Cloud Storage
+- Flask (for web application)
 
 ### Environment Setup
 ```bash
@@ -110,6 +127,14 @@ python src/model_training.py
 1. Access Airflow UI at `http://localhost:8080`
 2. Trigger `extract_titanic_data` DAG
 3. Monitor pipeline execution
+
+### Option 4: Web Application
+```bash
+# Run Flask web application
+python application.py
+
+# Access web interface at http://localhost:5001
+```
 
 ## 📊 Model Performance
 
@@ -162,6 +187,39 @@ print(features)
 2025-07-02 19:46:17,580 - INFO - End of Model Training pipeline...
 ```
 
+## 🌐 Web Application
+
+The Flask web application provides an interactive interface for making survival predictions:
+
+### Features
+- **Interactive Form**: User-friendly input form with 11 feature fields
+- **Real-Time Predictions**: Instant survival probability calculations
+- **Modern UI**: Responsive design with gradient backgrounds and animations
+- **Error Handling**: Comprehensive validation and error messages
+
+### Usage
+1. Start the application: `python application.py`
+2. Navigate to `http://localhost:5001`
+3. Fill in passenger details:
+   - Age, Fare, Passenger Class
+   - Gender, Port of Embarkation
+   - Family Size, Cabin Status
+   - Title, Interaction Features
+4. Click "Predict My Fate!" for instant results
+
+### Input Features
+- **Age**: Passenger age (numeric)
+- **Fare**: Ticket fare paid (numeric)
+- **Pclass**: Passenger class (1, 2, or 3)
+- **Sex**: Gender (Male: 0, Female: 1)
+- **Embarked**: Port (Cherbourg: 0, Queenstown: 1, Southampton: 2)
+- **Familysize**: Total family members aboard
+- **Isalone**: Solo traveler indicator (Yes: 1, No: 0)
+- **HasCabin**: Cabin assignment indicator (Yes: 1, No: 0)
+- **Title**: Passenger title (Mr: 1, Miss: 2, etc.)
+- **Pclass_Fare**: Interaction feature (Pclass × Fare)
+- **Age_Fare**: Interaction feature (Age × Fare)
+
 ## 🔧 Configuration Files
 
 ### Database Configuration
@@ -184,17 +242,46 @@ TRAIN_PATH = "artifacts/raw/titanic_train.csv"
 TEST_PATH = "artifacts/raw/titanic_test.csv"
 ```
 
+### Flask Application Configuration
+```python
+# application.py
+MODEL_PATH = "artifacts/models/random_forest_model.pkl"
+FEATURE_NAMES = [
+    'Pclass', 'Age', 'Fare', 'Sex', 'Embarked', 'Familysize', 'Isalone',
+    'HasCabin', 'Title', 'Pclass_Fare', 'Age_Fare'
+]
+```
+
 ## 🚀 Deployment
 
 ### Local Development
 ```bash
+# Start Airflow
 astro dev start
+
+# Start Flask application
+python application.py
 ```
 
 ### Production (Astronomer)
 ```bash
 astro deploy
 ```
+
+### Docker Deployment
+```bash
+# Build container
+docker build -t titanic-survival .
+
+# Run container
+docker run -p 5001:5001 titanic-survival
+```
+
+### Container Configuration
+- **Base Image**: Astronomer Runtime 12.6.0
+- **Additional Providers**: Google Cloud providers for Airflow
+- **Port**: 5001 (Flask application)
+- **Dependencies**: All requirements from requirements.txt
 
 ## 🤝 Contributing
 
@@ -210,11 +297,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔗 Technologies Used
 
-- **ML/Data**: pandas, scikit-learn, imbalanced-learn
+- **ML/Data**: pandas, scikit-learn, imbalanced-learn, numpy
+- **Web Framework**: Flask
 - **Orchestration**: Apache Airflow, Astronomer
 - **Storage**: Redis, PostgreSQL, GCP Cloud Storage
 - **Containerization**: Docker
-- **Monitoring**: Custom logging system
+- **Monitoring**: Custom logging system, Prometheus, Alibi-detect
+- **Frontend**: HTML5, CSS3, JavaScript (responsive design)
+- **Database**: PostgreSQL with psycopg2-binary connector
 
 ---
 
